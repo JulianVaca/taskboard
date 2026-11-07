@@ -112,7 +112,7 @@ El paso a paso completo, incluido el dominio de Hostinger, está en [docs/DESPLI
 
 1. Render → **New → Blueprint** → repositorio `taskboard`. Render lee `render.yaml` y crea la base de datos, la API y el sitio.
 2. Escribe `VITE_API_URL` cuando Render la pida.
-3. Configura los registros DNS en Hostinger para `skillware.online`.
+3. Configura los registros DNS de `skillware.online` en Cloudflare, que es quien gestiona sus nameservers.
 4. Cada `git push` a `main` vuelve a desplegar automáticamente. GitHub Actions ejecuta las pruebas en cada push.
 
 ## Buenas prácticas aplicadas

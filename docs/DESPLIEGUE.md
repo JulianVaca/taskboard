@@ -49,17 +49,23 @@ La tabla `tasks` se crea sola cuando arranca la API. Si quieres crearla a mano, 
 2. En **taskboard-api → Settings → Custom Domains**, verifica `api.skillware.online`.
 3. Render muestra los registros DNS exactos que espera. Si difieren de la tabla de abajo, usa los de Render.
 
-### En Hostinger (hPanel → Dominios → skillware.online → DNS / Nameservers)
+### Dónde se editan los registros DNS
 
-Elimina primero los registros `A` y `AAAA` de `@` y el `CNAME` de `www` que Hostinger crea por defecto. Luego agrega:
+El dominio está registrado en Hostinger, pero sus servidores de nombres son de Cloudflare (`achiel.ns.cloudflare.com` y `collins.ns.cloudflare.com`). Por eso los registros se editan en **Cloudflare → skillware.online → DNS → Records**, no en hPanel. Los cambios que hagas en el DNS de Hostinger no tendrán efecto mientras los nameservers apunten a Cloudflare.
 
-| Tipo | Nombre | Apunta a | TTL |
+Elimina primero los registros `A` y `AAAA` existentes de `@` y `www`. Luego agrega estos registros con el proxy **apagado** (nube gris, "DNS only"). Render necesita ver el destino real para verificar el dominio y emitir el certificado HTTPS.
+
+| Tipo | Nombre | Destino | Proxy |
 |---|---|---|---|
-| A | `@` | `216.24.57.1` | 3600 |
-| CNAME | `www` | `taskboard-web.onrender.com` | 3600 |
-| CNAME | `api` | `taskboard-api.onrender.com` | 3600 |
+| CNAME | `@` | `taskboard-web.onrender.com` | DNS only |
+| CNAME | `www` | `taskboard-web.onrender.com` | DNS only |
+| CNAME | `api` | `taskboard-api.onrender.com` | DNS only |
+
+Cloudflare permite un CNAME en la raíz gracias al "CNAME flattening". Si prefieres un registro A en la raíz, usa `216.24.57.1`.
 
 Si existe un registro `CAA`, debe permitir `letsencrypt.org` y `pki.goog`, o elimínalo.
+
+Si algún día devuelves los nameservers a Hostinger, crea los mismos registros en hPanel → Dominios → skillware.online → DNS, usando el registro A `216.24.57.1` para la raíz.
 
 ### Verificar
 
@@ -82,6 +88,7 @@ Si existe un registro `CAA`, debe permitir `letsencrypt.org` y `pki.goog`, o eli
 | La API no arranca | Revisa los logs. `DATABASE_URL` es obligatoria en producción. |
 | Error de conexión a la base | Usa la Internal URL con `DB_SSL=false` en Render y la External con `DB_SSL=true` en local. |
 | La primera carga tarda cerca de un minuto | Es el plan gratuito despertando. La app muestra un aviso mientras tanto. |
-| El dominio no verifica | Revisa que no queden los registros `A`/`AAAA` antiguos de Hostinger. |
+| El dominio no verifica | Revisa en Cloudflare que no queden registros `A`/`AAAA` antiguos y que el proxy esté en "DNS only". |
+| Error de redirecciones infinitas | El proxy de Cloudflare está activo con SSL "Flexible". Apágalo o usa SSL "Full (strict)". |
 
 La base de datos gratuita de Render expira a los 30 días de creada. Si la creas hoy, sigue activa para la entrega.
