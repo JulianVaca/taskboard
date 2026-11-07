@@ -14,3 +14,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Claves y tokens: nunca al repositorio
+*API_KEY*
+*API_TOKEN*
+*keys*.env
+*.pem
