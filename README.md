@@ -4,11 +4,9 @@ Gestor de tareas full stack: crea, lista, completa y elimina tareas. El frontend
 
 | Servicio | URL de producción |
 |---|---|
-| Aplicación (Static Site) | https://skillware.online · https://taskboard-web.onrender.com |
-| API (Web Service) | https://api.skillware.online/api/health · https://taskboard-api.onrender.com/api/health |
-| Base de datos | Render Postgres `taskboard-db` (solo accesible desde Render) |
-
-> Si el subdominio `.onrender.com` asignado por Render es distinto, actualiza esta tabla.
+| Aplicación (Static Site) | https://taskboard-web-56l3.onrender.com · https://skillware.online |
+| API (Web Service) | https://taskboard-api-9oyi.onrender.com/api/health · https://api.skillware.online/api/health |
+| Base de datos | Render Postgres `taskboard-db`, PostgreSQL 17, solo accesible desde Render |
 
 ## Arquitectura
 
@@ -93,7 +91,7 @@ cd backend && npm test
 |---|---|---|
 | `DATABASE_URL` | External Database URL | Internal Database URL |
 | `DB_SSL` | `true` | `false` |
-| `FRONTEND_URL` | `http://localhost:5173` | `https://skillware.online,https://www.skillware.online,https://taskboard-web.onrender.com` |
+| `FRONTEND_URL` | `http://localhost:5173` | `https://skillware.online,https://www.skillware.online,https://taskboard-web-56l3.onrender.com` |
 | `PORT` | `3000` | la asigna Render automáticamente |
 
 `FRONTEND_URL` acepta varios orígenes separados por coma. Las barras finales se ignoran.
@@ -102,7 +100,7 @@ cd backend && npm test
 
 | Variable | Local | Producción |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:3000` | `https://api.skillware.online` o `https://taskboard-api.onrender.com` |
+| `VITE_API_URL` | `http://localhost:3000` | `https://taskboard-api-9oyi.onrender.com`, o `https://api.skillware.online` cuando el dominio esté activo |
 
 Vite incrusta `VITE_API_URL` al compilar. Si la cambias en Render, lanza **Manual Deploy → Deploy latest commit**.
 
@@ -112,7 +110,7 @@ El paso a paso completo, incluido el dominio de Hostinger, está en [docs/DESPLI
 
 1. Render → **New → Blueprint** → repositorio `taskboard`. Render lee `render.yaml` y crea la base de datos, la API y el sitio.
 2. Escribe `VITE_API_URL` cuando Render la pida.
-3. Configura los registros DNS de `skillware.online` en Cloudflare, que es quien gestiona sus nameservers.
+3. Configura los registros DNS de `skillware.online` en el panel de Hostinger.
 4. Cada `git push` a `main` vuelve a desplegar automáticamente. GitHub Actions ejecuta las pruebas en cada push.
 
 ## Buenas prácticas aplicadas

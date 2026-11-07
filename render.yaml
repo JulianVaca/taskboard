@@ -33,7 +33,7 @@ services:
       - key: DB_SSL
         value: "false"
       - key: FRONTEND_URL
-        value: https://skillware.online,https://www.skillware.online,https://taskboard-web.onrender.com
+        value: https://skillware.online,https://www.skillware.online,https://taskboard-web-56l3.onrender.com
 
   # Frontend: React + Vite como sitio estático
   - type: web
