@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { CheckCheck, Moon, Sun } from "lucide-react";
 import clsx from "clsx";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 const DOT = {
   online: "bg-[#19c37d]",
@@ -15,7 +15,44 @@ const LANGS = [
   { id: "en", label: "EN", name: "English" },
 ];
 
-export default function TopBar({ apiStatus, theme, onToggleTheme }) {
+const SKINS = ["classic", "comic", "brutal"];
+
+/** Selector de estilo con el lenguaje del cómic: planchas entintadas, la activa en magenta. */
+function SkinSwitch({ skin, setSkin }) {
+  const { t } = useI18n();
+  return (
+    <div className="mt-4 flex items-center justify-end gap-2.5">
+      <span className="text-xs font-extrabold uppercase tracking-wide text-on-ground [font-stretch:85%]">{t("skin.label")}</span>
+      <div role="group" aria-label={t("skin.label")} className="inked flex h-9 rounded-[3px] p-1 [--depth:3px]">
+        {SKINS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={skin === id}
+            onClick={() => setSkin(id)}
+            className={clsx(
+              "cursor-pointer rounded-[2px] px-2.5 font-comic text-sm leading-none tracking-wider transition-colors",
+              skin === id ? "bg-magenta text-white dark:text-[#14101f]" : "text-ink-text hover:bg-yellow hover:text-[#14101f]"
+            )}
+          >
+            {t(`skin.${id}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin }) {
+  return (
+    <div>
+      <Bar apiStatus={apiStatus} theme={theme} onToggleTheme={onToggleTheme} />
+      <SkinSwitch skin={skin} setSkin={setSkin} />
+    </div>
+  );
+}
+
+function Bar({ apiStatus, theme, onToggleTheme }) {
   const { t, lang, setLang } = useI18n();
   return (
     <header className="flex items-center justify-between gap-3">

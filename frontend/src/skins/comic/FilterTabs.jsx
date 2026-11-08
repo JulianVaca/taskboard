@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 export const FILTERS = ["all", "pending", "done"];
 

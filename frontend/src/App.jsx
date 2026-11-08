@@ -1,94 +1,46 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { Toaster } from "sonner";
-import Background from "./components/Background.jsx";
-import TopBar from "./components/TopBar.jsx";
-import Hero from "./components/Hero.jsx";
-import TaskComposer from "./components/TaskComposer.jsx";
-import FilterTabs from "./components/FilterTabs.jsx";
-import TaskItem from "./components/TaskItem.jsx";
-import { EmptyState, ErrorState, LoadingState } from "./components/States.jsx";
+import { MotionConfig } from "motion/react";
+import ClassicApp from "./skins/classic/ClassicApp.jsx";
+import ComicApp from "./skins/comic/ComicApp.jsx";
+import BrutalApp from "./skins/brutal/BrutalApp.jsx";
 import { useTasks } from "./hooks/useTasks.js";
 import { useTheme } from "./hooks/useTheme.js";
-import { useI18n } from "./i18n.jsx";
-import { api } from "./api.js";
+import { useSkin } from "./shared/useSkin.js";
 
+const SKIN_APPS = { classic: ClassicApp, comic: ComicApp, brutal: BrutalApp };
+
+/** Estado compartido (tareas, tema, idioma, filtro) y un estilo visual intercambiable encima. */
 export default function App() {
-  const { tasks, counts, status, slow, error, busy, load, add, toggle, rename, remove } = useTasks();
+  const tasks = useTasks();
   const { theme, toggle: toggleTheme } = useTheme();
-  const { t, describeError } = useI18n();
+  const { skin, setSkin } = useSkin(theme);
   const [filter, setFilter] = useState("all");
 
   const visible = useMemo(() => {
-    if (filter === "pending") return tasks.filter((x) => !x.done);
-    if (filter === "done") return tasks.filter((x) => x.done);
-    return tasks;
-  }, [tasks, filter]);
+    if (filter === "pending") return tasks.tasks.filter((x) => !x.done);
+    if (filter === "done") return tasks.tasks.filter((x) => x.done);
+    return tasks.tasks;
+  }, [tasks.tasks, filter]);
 
+  const { status, slow } = tasks;
   const apiStatus = status === "ready" ? "online" : status === "error" ? "offline" : slow ? "waking" : "checking";
-  const ready = status === "ready";
+  const Skin = SKIN_APPS[skin];
 
   return (
     <MotionConfig reducedMotion="user">
-      <Background />
-      <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pt-6 pb-10 sm:px-6 sm:pt-8">
-        <TopBar apiStatus={apiStatus} theme={theme} onToggleTheme={toggleTheme} />
-
-        <main className="mt-10 flex-1 sm:mt-14">
-          <Hero counts={counts} ready={ready} />
-
-          <div className="mt-8">
-            <TaskComposer onAdd={add} disabled={!ready} />
-          </div>
-
-          <section aria-label={t("list.label")} className="mt-10">
-            {ready && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-5 flex min-w-0 items-center justify-between gap-3">
-                <FilterTabs value={filter} onChange={setFilter} counts={counts} />
-                {counts.all > 0 && (
-                  <p className="hidden text-xs font-extrabold uppercase tracking-wide text-on-ground [font-stretch:85%] sm:block">{t("list.hint")}</p>
-                )}
-              </motion.div>
-            )}
-
-            {status === "loading" && <LoadingState slow={slow} />}
-            {status === "error" && <ErrorState message={describeError(error)} onRetry={() => load()} />}
-            {ready &&
-              (visible.length === 0 ? (
-                <EmptyState filter={filter} />
-              ) : (
-                <ul className="space-y-4">
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {visible.map((task) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-                        busy={busy.has(task.id)}
-                        onToggle={toggle}
-                        onRename={rename}
-                        onRemove={remove}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </ul>
-              ))}
-          </section>
-        </main>
-
-        <footer className="mt-20 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-          <p className="caption px-2.5 py-1 text-[0.7rem]">React · Vite · Express · PostgreSQL · Render</p>
-          <nav className="flex gap-2 text-sm font-bold">
-            <a className="inked rounded-[3px] px-3 py-1.5 text-ink-text underline [--depth:3px] hover:[--panel-bg:var(--yellow)] hover:text-[#14101f]" href="https://github.com/JulianVaca/taskboard" target="_blank" rel="noreferrer">
-              {t("footer.code")}
-            </a>
-            <a className="inked rounded-[3px] px-3 py-1.5 text-ink-text underline [--depth:3px] hover:[--panel-bg:var(--yellow)] hover:text-[#14101f]" href={`${api.url}/api/health`} target="_blank" rel="noreferrer">
-              {t("footer.api")}
-            </a>
-          </nav>
-        </footer>
-      </div>
-
-      <Toaster position="bottom-center" theme={theme} closeButton toastOptions={{ className: "comic-toast" }} />
+      <Skin
+        key={skin}
+        {...tasks}
+        visible={visible}
+        filter={filter}
+        setFilter={setFilter}
+        apiStatus={apiStatus}
+        ready={status === "ready"}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        skin={skin}
+        setSkin={setSkin}
+      />
     </MotionConfig>
   );
 }
