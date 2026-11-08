@@ -42,17 +42,21 @@ taskboard/
 | Librería | Uso |
 |---|---|
 | React 19 + Vite 8 | Aplicación y empaquetado |
-| Tailwind CSS 4 | Sistema de estilos, tema claro y oscuro |
-| Motion | Animaciones de lista, filtros, casillas y anillo de progreso |
+| Tailwind CSS 4 | Sistema de estilos, tema claro (día) y oscuro (noche) |
+| Motion | Animaciones de lista, filtros, casillas, medidor y fondo con parallax |
 | Lucide | Íconos |
 | Sonner | Notificaciones de éxito y error |
+| Bangers y Archivo (Fontsource) | Rotulado de cómic y texto de interfaz, servidos desde el propio sitio |
+
+Estilo: la interfaz es una página de cómic dibujada en 2D que simula 3D, inspirada en el estilo visual de *Spider-Man: Into the Spider-Verse*: tramas de puntos Ben-Day, contornos de tinta gruesos, planchas de color desregistradas, viñetas con extrusión y sombra de trama, y una ciudad en capas que se mueve con el puntero y el scroll. Las animaciones van "a dos" (por fotogramas, con `steps()`).
 
 Funciones:
 
 - Crear tareas con validación de campo vacío. La tecla `/` enfoca el campo.
-- Completar, editar con doble clic y eliminar tareas.
-- Filtros por estado, anillo de progreso y contador de pendientes.
+- Completar (con onomatopeya de cómic), editar con doble clic y eliminar tareas.
+- Filtros por estado, medidor de progreso y contador de pendientes.
 - Indicador de estado de la API y aviso mientras el servidor gratuito despierta.
+- Interfaz en español o inglés (selector ES/EN, se recuerda en el navegador).
 - Tema claro y oscuro, diseño responsivo y respeto por "reducir movimiento" del sistema.
 
 ## API REST
