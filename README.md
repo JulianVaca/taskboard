@@ -135,7 +135,7 @@ Vite incrusta `VITE_API_URL` al compilar. Si la cambias en Render, lanza **Manua
 |---|---|---|
 | `desarrollo` | Trabajo diario e integración de cambios | GitHub Actions ejecuta pruebas y build en cada push |
 | `produccion` | Versión estable publicada | Render despliega automáticamente cada cambio |
-| `main` | Rama por defecto que pide el taller, espejo de `produccion` | — |
+| `main` | Rama por defecto que pide el taller, espejo de `produccion` | El workflow `Espejo main` la avanza automáticamente con cada cambio en `produccion` |
 
 Flujo de trabajo:
 
@@ -144,7 +144,13 @@ git switch desarrollo
 # ...cambios y commits...
 git push
 gh pr create --base produccion --head desarrollo --title "Release: ..."
-# cuando el CI pasa, se fusiona el PR y Render despliega producción
+# cuando el CI pasa, se fusiona el PR: el workflow "Espejo main" avanza main
+# y Render despliega producción
+```
+
+Si el workflow fallara (por ejemplo, porque `main` tiene commits propios), el espejo se puede hacer a mano:
+
+```bash
 git switch main && git merge --ff-only origin/produccion && git push
 ```
 

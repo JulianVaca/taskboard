@@ -1,0 +1,26 @@
+name: Espejo main
+
+# Cada cambio que entra a produccion se replica en main (Render despliega desde main).
+# Solo avance rápido: si main tuviera commits propios, el push falla en vez de pisarlos.
+on:
+  push:
+    branches: [produccion]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror-main
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Actualizar main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: produccion
+          fetch-depth: 0
+      - name: Avance rápido de main a produccion
+        run: git push origin HEAD:main
