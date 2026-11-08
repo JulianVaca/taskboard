@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { CircleCheckBig, CloudOff, ListTodo, RotateCw, Sparkles } from "lucide-react";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 const onTwos = (frames) => (p) => Math.floor(p * frames) / frames;
 

@@ -50,8 +50,52 @@
   --sun: #f4f1ff;
 }
 
+/* ── Brutal: paleta "Ponche Tropical". Nightfall para bordes, tipografía y sombras rígidas. ── */
+:root {
+  --b-ground: #f5ab99;
+  --b-paper: #fffdf9;
+  --b-ink: #351c4d;
+  --b-text: #351c4d;
+  --b-text-soft: #5b3f73;
+  --b-sun: #feb47b;
+  --b-heat: #ff7e5f;
+  --b-para: #765285;
+  --b-on-para: #fffdf9;
+  --b-on-accent: #351c4d;
+}
+.dark {
+  --b-ground: #351c4d;
+  --b-paper: #4a2b63;
+  --b-ink: #12081c;
+  --b-text: #fffdf9;
+  --b-text-soft: #e7d6f0;
+}
+
+@theme {
+  --animate-wave: wave 2.4s ease-in-out 0.4s 1;
+  --animate-marquee: marquee 1s linear infinite;
+
+  @keyframes wave {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+  }
+}
+
 @theme inline {
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-sans: var(--font-body);
+  --color-b-ground: var(--b-ground);
+  --color-b-paper: var(--b-paper);
+  --color-b-ink: var(--b-ink);
+  --color-b-text: var(--b-text);
+  --color-b-text-soft: var(--b-text-soft);
+  --color-b-sun: var(--b-sun);
+  --color-b-heat: var(--b-heat);
+  --color-b-para: var(--b-para);
+  --color-b-on-para: var(--b-on-para);
+  --color-b-on-accent: var(--b-on-accent);
   --font-comic: "Bangers", "Archivo Variable", ui-sans-serif, sans-serif;
   --color-ground: var(--ground);
   --color-paper: var(--paper);
@@ -65,30 +109,77 @@
   --color-danger: var(--danger);
 }
 
+/* Cada estilo define su suelo, su tipografía de cuerpo y las superficies del navegador. */
+:root {
+  --font-body: "Archivo Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --page-bg: var(--ground);
+  --page-fg: var(--ink-text);
+  --sel-bg: var(--yellow);
+  --sel-fg: #14101f;
+  --caret: var(--magenta);
+  --focus-w: 3px;
+  --scroll-thumb: var(--ink);
+  --scroll-track: var(--ground-deep);
+}
+html[data-skin="classic"] {
+  --font-body: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --page-bg: #fafafa;
+  --page-fg: #18181b;
+  --sel-bg: rgb(139 92 246 / 0.25);
+  --sel-fg: inherit;
+  --caret: #7c3aed;
+  --focus: #8b5cf6;
+  --focus-w: 2px;
+  --scroll-thumb: #a1a1aa;
+  --scroll-track: transparent;
+}
+html[data-skin="classic"].dark {
+  --page-bg: #09090b;
+  --page-fg: #f4f4f5;
+  --scroll-thumb: #52525b;
+}
+html[data-skin="brutal"] {
+  --page-bg: var(--b-ground);
+  --page-fg: var(--b-text);
+  --sel-bg: var(--b-heat);
+  --sel-fg: #351c4d;
+  --caret: var(--b-heat);
+  --focus: var(--b-ink);
+  --scroll-thumb: var(--b-ink);
+  --scroll-track: var(--b-ground);
+}
+html[data-skin="brutal"].dark {
+  --focus: var(--b-sun);
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    scrollbar-color: var(--ink) var(--ground-deep);
-    accent-color: var(--magenta);
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+    accent-color: var(--caret);
+    overflow-x: clip;
   }
   body {
     min-height: 100dvh;
-    background-color: var(--ground);
-    color: var(--ink-text);
-    font-family: var(--font-sans);
+    background-color: var(--page-bg);
+    color: var(--page-fg);
+    font-family: var(--font-body);
     font-stretch: 100%;
   }
+  html[data-skin="classic"] body {
+    font-feature-settings: "cv11", "ss01";
+  }
   ::selection {
-    background: var(--yellow);
-    color: #14101f;
+    background: var(--sel-bg);
+    color: var(--sel-fg);
   }
   input {
-    caret-color: var(--magenta);
+    caret-color: var(--caret);
   }
   :focus-visible {
-    outline: 3px solid var(--focus);
-    outline-offset: 3px;
+    outline: var(--focus-w) solid var(--focus);
+    outline-offset: var(--focus-w);
   }
   a {
     text-underline-offset: 4px;
@@ -209,6 +300,91 @@
     0%, 85% { opacity: 1; }
     100% { opacity: 0; }
   }
+}
+
+/* ── Clásico: brillo de carga del diseño original. ── */
+@utility shimmer {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.05) 25%, rgb(0 0 0 / 0.1) 50%, rgb(0 0 0 / 0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  &:where(.dark *) {
+    background-image: linear-gradient(90deg, rgb(255 255 255 / 0.04) 25%, rgb(255 255 255 / 0.09) 50%, rgb(255 255 255 / 0.04) 75%);
+  }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ── Brutal: losas con borde de 4px y sombra rígida de 6px. ── */
+@utility slab {
+  background: var(--b-paper);
+  color: var(--b-text);
+  border: 4px solid var(--b-ink);
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--b-ink);
+}
+
+/* Compresión táctil: al pasar el cursor se eleva en diagonal (sombra 10px); al pulsar se hunde (sombra 0).
+   Usa la propiedad `translate`, que no choca con los `transform` que aplica Motion. */
+@utility press {
+  transition:
+    translate 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.15s ease;
+  /* Solo con puntero real: en táctil una losa tocada no debe quedarse elevada. */
+  @media (hover: hover) and (pointer: fine) {
+    &:where(:not(:disabled)):hover {
+      translate: -4px -4px;
+      box-shadow: 10px 10px 0 var(--b-ink);
+    }
+  }
+  &:where(:not(:disabled)):active {
+    translate: 6px 6px;
+    box-shadow: 0 0 0 var(--b-ink);
+    transition-duration: 0.06s;
+  }
+}
+
+/* Etiqueta tipo ticket: muescas laterales recortadas. */
+@utility ticket {
+  background: var(--b-para);
+  color: var(--b-on-para);
+  border-radius: 6px;
+  mask: radial-gradient(circle 5px at 0 50%, transparent 98%, black) left / 51% 100% no-repeat,
+    radial-gradient(circle 5px at 100% 50%, transparent 98%, black) right / 51% 100% no-repeat;
+}
+
+@utility display-wide {
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+[data-sonner-toaster] [data-sonner-toast].brutal-toast {
+  font-family: var(--font-body);
+  background: var(--b-paper);
+  color: var(--b-text);
+  border: 4px solid var(--b-ink);
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--b-ink);
+}
+[data-sonner-toaster] [data-sonner-toast].brutal-toast [data-title] {
+  font-weight: 900;
+}
+[data-sonner-toaster] [data-sonner-toast].brutal-toast [data-description] {
+  color: var(--b-text-soft);
+}
+[data-sonner-toaster] [data-sonner-toast].brutal-toast [data-close-button] {
+  background: var(--b-heat);
+  color: #351c4d;
+  border: 2px solid var(--b-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press { transition: none; }
 }
 
 /* Notificaciones como cartelas entintadas. */

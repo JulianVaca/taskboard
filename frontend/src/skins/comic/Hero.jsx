@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import ProgressMeter from "./ProgressMeter.jsx";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 function greetingKey(date) {
   const h = date.getHours();

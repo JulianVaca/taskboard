@@ -31,7 +31,8 @@ A single-list task manager whose interface is drawn as a comic book: the everyda
 - Filters: all, pending, completed, with counts; progress indicator; pending summary.
 - API status indicator; loading, waking, error-with-retry and empty states.
 - Light and dark theme, persisted.
-- Interface language: Spanish by default, with a user-selectable switch to English (new requirement).
+- Interface language: Spanish by default, with a user-selectable switch to English.
+- Visual style switch: Classic, Comic, Brutal (see Brand Commitments); every style keeps every function, both themes and both languages.
 - Respect the system "reduce motion" setting.
 - Backend, API contract and database stay untouched; the redesign is frontend only.
 - Stack: React 19, Vite 8, Tailwind CSS 4, Motion, Lucide, Sonner.
@@ -39,7 +40,10 @@ A single-list task manager whose interface is drawn as a comic book: the everyda
 ## Brand Commitments
 
 - Name: TaskBoard.
-- Binding visual direction from the owner: full-intensity cartoon comic-book style, 2D artwork that fakes 3D depth, in the spirit of the animated film *Spider-Man: Into the Spider-Verse* (halftone dots, thick ink lines, color misregistration, panels with layered depth). Inspired by that art style only; no characters, logos or franchise imagery.
+- The interface offers three user-selectable visual styles over the same product, chosen from a style switch and remembered per browser (default: Comic):
+  - **Classic:** the original TaskBoard design (Inter, soft translucent cards, violet accent), kept as it was.
+  - **Comic:** full-intensity cartoon comic-book style, 2D artwork that fakes 3D depth, in the spirit of the animated film *Spider-Man: Into the Spider-Verse* (halftone dots, thick ink lines, color misregistration, panels with layered depth). Inspired by that art style only; no characters, logos or franchise imagery.
+  - **Brutal:** Kinetic Neo-Brutalism with the owner's "Ponche Tropical" palette (Nightfall #351C4D, Tropical Pink #F5AB99, warm white #FFFDF9, Liquid Sunset #FEB47B, Heatwave #FF7E5F, Paradise #765285), tactile hover-lift / press-sink compression and spring physics.
 
 ## Evidence on Hand
 

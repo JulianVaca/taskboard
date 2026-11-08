@@ -46,9 +46,17 @@ taskboard/
 | Motion | Animaciones de lista, filtros, casillas, medidor y fondo con parallax |
 | Lucide | Íconos |
 | Sonner | Notificaciones de éxito y error |
-| Bangers y Archivo (Fontsource) | Rotulado de cómic y texto de interfaz, servidos desde el propio sitio |
+| Bangers, Archivo e Inter (Fontsource) | Rotulado de cómic, texto de interfaz y estilo clásico, servidos desde el propio sitio |
 
-Estilo: la interfaz es una página de cómic dibujada en 2D que simula 3D, inspirada en el estilo visual de *Spider-Man: Into the Spider-Verse*: tramas de puntos Ben-Day, contornos de tinta gruesos, planchas de color desregistradas, viñetas con extrusión y sombra de trama, y una ciudad en capas que se mueve con el puntero y el scroll. Las animaciones van "a dos" (por fotogramas, con `steps()`).
+Estilos: un selector permite elegir entre tres estilos visuales. Todos tienen las mismas funciones, temas e idiomas, y el navegador recuerda la elección.
+
+| Estilo | Descripción |
+|---|---|
+| Clásico | El diseño original: Inter, tarjetas translúcidas y acento violeta. |
+| Cómic (por defecto) | Página de cómic 2D que simula 3D, inspirada en el estilo visual de *Spider-Man: Into the Spider-Verse*: tramas Ben-Day, tinta gruesa, planchas desregistradas, viñetas con extrusión y ciudad en capas con parallax. Animaciones "a dos" con `steps()`. |
+| Brutal | Kinetic Neo-Brutalism con la paleta Ponche Tropical: bordes de 4 px y sombras rígidas de 6 px en Nightfall, Bento Grid, cintas en movimiento que aceleran con el scroll, compresión táctil al pasar el cursor y al pulsar, stickers SVG arrastrables y cursor reactivo, con física de resorte. |
+
+Cada estilo vive en `frontend/src/skins/<estilo>/`. La lógica compartida está en `frontend/src/shared/`, `hooks/` e `i18n.jsx`.
 
 Funciones:
 

@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Pencil, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import Burst from "./Burst.jsx";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 function relative(dateStr, lang, justNow) {
   const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
