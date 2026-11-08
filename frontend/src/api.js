@@ -47,5 +47,6 @@ export const api = {
   list: (opts) => request("/api/tasks", opts),
   create: (title) => request("/api/tasks", { method: "POST", body: { title } }),
   setDone: (id, done) => request(`/api/tasks/${id}`, { method: "PATCH", body: { done } }),
+  rename: (id, title) => request(`/api/tasks/${id}`, { method: "PATCH", body: { title } }),
   remove: (id) => request(`/api/tasks/${id}`, { method: "DELETE" }),
 };
