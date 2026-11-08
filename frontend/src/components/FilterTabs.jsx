@@ -1,39 +1,44 @@
 import { motion } from "motion/react";
 import clsx from "clsx";
+import { useI18n } from "../i18n.jsx";
 
-export const FILTERS = [
-  { id: "all", label: "Todas" },
-  { id: "pending", label: "Pendientes" },
-  { id: "done", label: "Completadas" },
-];
+export const FILTERS = ["all", "pending", "done"];
 
-/** Control segmentado con un indicador que se desliza entre opciones. */
+/** Grupo de botones entintado; el filtro activo es una plancha magenta que salta entre opciones. */
 export default function FilterTabs({ value, onChange, counts }) {
+  const { t } = useI18n();
   return (
-    <div role="tablist" aria-label="Filtrar tareas" className="flex w-full rounded-xl border sm:inline-flex sm:w-auto border-zinc-200 bg-white/60 p-1 backdrop-blur dark:border-white/10 dark:bg-white/5">
-      {FILTERS.map((f) => {
-        const active = value === f.id;
+    <div role="group" aria-label={t("filters.label")} className="inked flex w-full rounded-[3px] p-1 [--depth:3px] sm:inline-flex sm:w-auto">
+      {FILTERS.map((id) => {
+        const active = value === id;
         return (
           <button
-            key={f.id}
-            role="tab"
-            aria-selected={active}
-            onClick={() => onChange(f.id)}
+            key={id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(id)}
             className={clsx(
-              "relative flex-1 cursor-pointer rounded-lg px-2 py-1.5 text-sm font-medium transition-colors sm:flex-none sm:px-3",
-              active ? "text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              "relative min-w-0 flex-1 cursor-pointer rounded-[2px] px-1.5 py-1.5 text-xs font-extrabold uppercase tracking-wide [font-stretch:78%] transition-colors sm:flex-none sm:px-3 sm:text-sm sm:[font-stretch:85%]",
+              active ? "text-white dark:text-[#14101f]" : "text-ink-text hover:bg-yellow hover:text-[#14101f]"
             )}
           >
             {active && (
               <motion.span
-                layoutId="filter-pill"
-                className="absolute inset-0 rounded-lg bg-white shadow-sm ring-1 ring-zinc-900/5 dark:bg-white/10 dark:ring-white/10"
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                layoutId="filter-plate"
+                className="absolute inset-0 rounded-[2px] border-2 border-ink bg-magenta"
+                transition={{ duration: 0.18, ease: (p) => Math.floor(p * 4) / 4 }}
               />
             )}
-            <span className="relative flex items-center justify-center gap-1.5">
-              {f.label}
-              <span className="rounded-md bg-zinc-100 px-1.5 text-xs tabular-nums text-zinc-500 dark:bg-white/10 dark:text-zinc-400">{counts[f.id]}</span>
+            <span className="relative flex items-center justify-center gap-1">
+              {t(`filters.${id}`)}
+              <span
+                className={clsx(
+                  "min-w-5 rounded-[2px] px-1 font-comic text-sm tracking-wider tabular-nums",
+                  active ? "bg-white text-[#14101f]" : "bg-ink text-white dark:bg-white/15"
+                )}
+              >
+                {counts[id]}
+              </span>
             </span>
           </button>
         );

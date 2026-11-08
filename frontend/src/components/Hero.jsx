@@ -1,45 +1,50 @@
 import { motion } from "motion/react";
-import ProgressRing from "./ProgressRing.jsx";
+import ProgressMeter from "./ProgressMeter.jsx";
+import { useI18n } from "../i18n.jsx";
 
-function greeting(date) {
+function greetingKey(date) {
   const h = date.getHours();
-  if (h < 12) return "Buenos días";
-  if (h < 19) return "Buenas tardes";
-  return "Buenas noches";
+  if (h < 12) return "greet.morning";
+  if (h < 19) return "greet.afternoon";
+  return "greet.night";
 }
 
-const dateFmt = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric", month: "long" });
-const today = (date) => {
-  const s = dateFmt.format(date);
-  return s.charAt(0).toUpperCase() + s.slice(1); // "Sábado, 7 de noviembre"
-};
-
 export default function Hero({ counts, ready }) {
+  const { t, lang } = useI18n();
   const now = new Date();
-  const progress = counts.all ? Math.round((counts.done / counts.all) * 100) : 0;
+  const date = new Intl.DateTimeFormat(lang, { weekday: "long", day: "numeric", month: "long" }).format(now);
 
-  let summary = "Cargando tu tablero…";
+  let summary = t("hero.loading");
   if (ready) {
-    if (counts.all === 0) summary = "Tu tablero está vacío. Empieza agregando una tarea.";
-    else if (counts.pending === 0) summary = "Completaste todo. ¡Excelente trabajo!";
-    else summary = `Tienes ${counts.pending} ${counts.pending === 1 ? "tarea pendiente" : "tareas pendientes"}.`;
+    if (counts.all === 0) summary = t("hero.empty");
+    else if (counts.pending === 0) summary = t("hero.allDone");
+    else summary = t("hero.pending", counts.pending);
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center justify-between gap-6"
-    >
+    <section className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-violet-600 dark:text-violet-400">{today(now)}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          {greeting(now)} <span className="inline-block origin-[70%_70%] animate-wave motion-reduce:animate-none">👋</span>
-        </h1>
-        <p className="mt-2 text-zinc-500 dark:text-zinc-400">{summary}</p>
+        <motion.h1
+          key={lang}
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4, ease: (p) => Math.floor(p * 6) / 6 }}
+          className="lettering origin-left text-[clamp(2.75rem,10vw,4.75rem)] leading-[0.95] text-balance"
+        >
+          {t(greetingKey(now))}
+        </motion.h1>
+        {/* Cartela de narrador: fecha y resumen del día, como en el arranque de una página de cómic. */}
+        <motion.p
+          initial={{ x: -24, opacity: 0, rotate: -5 }}
+          animate={{ x: 0, opacity: 1, rotate: -1.5 }}
+          transition={{ duration: 0.36, delay: 0.15, ease: (p) => Math.floor(p * 6) / 6 }}
+          className="caption mt-5 max-w-md origin-left px-3.5 py-2 text-left normal-case tracking-normal"
+        >
+          <span className="block text-xs uppercase tracking-[0.06em]">{date}</span>
+          <span className="mt-0.5 block text-base font-bold [font-stretch:100%]">{summary}</span>
+        </motion.p>
       </div>
-      {ready && counts.all > 0 && <ProgressRing value={progress} />}
-    </motion.section>
+      {ready && counts.all > 0 && <ProgressMeter done={counts.done} all={counts.all} />}
+    </section>
   );
 }

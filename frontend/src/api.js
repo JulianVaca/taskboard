@@ -3,10 +3,12 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\
 
 const TIMEOUT_MS = 70_000; // el plan gratuito de Render puede tardar ~1 min en despertar
 
+/** code: "timeout" | "network" | "http"; la interfaz lo traduce al idioma activo. */
 export class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, code = "http") {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -29,7 +31,8 @@ async function request(path, { method = "GET", body, signal } = {}) {
       controller.signal.aborted
         ? "La API tardó demasiado en responder. Intenta de nuevo."
         : "No se pudo conectar con la API. Revisa tu conexión o intenta en unos segundos.",
-      0
+      0,
+      controller.signal.aborted ? "timeout" : "network"
     );
   } finally {
     clearTimeout(timer);

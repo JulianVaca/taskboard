@@ -10,16 +10,18 @@ import TaskItem from "./components/TaskItem.jsx";
 import { EmptyState, ErrorState, LoadingState } from "./components/States.jsx";
 import { useTasks } from "./hooks/useTasks.js";
 import { useTheme } from "./hooks/useTheme.js";
+import { useI18n } from "./i18n.jsx";
 import { api } from "./api.js";
 
 export default function App() {
   const { tasks, counts, status, slow, error, busy, load, add, toggle, rename, remove } = useTasks();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { t, describeError } = useI18n();
   const [filter, setFilter] = useState("all");
 
   const visible = useMemo(() => {
-    if (filter === "pending") return tasks.filter((t) => !t.done);
-    if (filter === "done") return tasks.filter((t) => t.done);
+    if (filter === "pending") return tasks.filter((x) => !x.done);
+    if (filter === "done") return tasks.filter((x) => x.done);
     return tasks;
   }, [tasks, filter]);
 
@@ -29,39 +31,39 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <Background />
-      <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pt-6 pb-8 sm:px-6 sm:pt-8">
+      <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pt-6 pb-10 sm:px-6 sm:pt-8">
         <TopBar apiStatus={apiStatus} theme={theme} onToggleTheme={toggleTheme} />
 
-        <main className="mt-12 flex-1 sm:mt-16">
+        <main className="mt-10 flex-1 sm:mt-14">
           <Hero counts={counts} ready={ready} />
 
           <div className="mt-8">
             <TaskComposer onAdd={add} disabled={!ready} />
           </div>
 
-          <section aria-label="Lista de tareas" className="mt-8">
+          <section aria-label={t("list.label")} className="mt-10">
             {ready && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 flex min-w-0 items-center justify-between gap-3">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-5 flex min-w-0 items-center justify-between gap-3">
                 <FilterTabs value={filter} onChange={setFilter} counts={counts} />
                 {counts.all > 0 && (
-                  <p className="hidden text-xs text-zinc-400 sm:block">Doble clic para editar</p>
+                  <p className="hidden text-xs font-extrabold uppercase tracking-wide text-on-ground [font-stretch:85%] sm:block">{t("list.hint")}</p>
                 )}
               </motion.div>
             )}
 
             {status === "loading" && <LoadingState slow={slow} />}
-            {status === "error" && <ErrorState message={error} onRetry={() => load()} />}
+            {status === "error" && <ErrorState message={describeError(error)} onRetry={() => load()} />}
             {ready &&
               (visible.length === 0 ? (
                 <EmptyState filter={filter} />
               ) : (
-                <ul className="space-y-2.5">
+                <ul className="space-y-4">
                   <AnimatePresence mode="popLayout" initial={false}>
-                    {visible.map((t) => (
+                    {visible.map((task) => (
                       <TaskItem
-                        key={t.id}
-                        task={t}
-                        busy={busy.has(t.id)}
+                        key={task.id}
+                        task={task}
+                        busy={busy.has(task.id)}
                         onToggle={toggle}
                         onRename={rename}
                         onRemove={remove}
@@ -73,20 +75,20 @@ export default function App() {
           </section>
         </main>
 
-        <footer className="mt-16 flex flex-col items-center gap-2 text-center text-xs text-zinc-400 sm:flex-row sm:justify-between dark:text-zinc-500">
-          <p>React · Vite · Express · PostgreSQL · Render</p>
-          <nav className="flex gap-4">
-            <a className="transition-colors hover:text-violet-600 dark:hover:text-violet-400" href="https://github.com/JulianVaca/taskboard" target="_blank" rel="noreferrer">
-              Código en GitHub
+        <footer className="mt-20 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="caption px-2.5 py-1 text-[0.7rem]">React · Vite · Express · PostgreSQL · Render</p>
+          <nav className="flex gap-2 text-sm font-bold">
+            <a className="inked rounded-[3px] px-3 py-1.5 text-ink-text underline [--depth:3px] hover:[--panel-bg:var(--yellow)] hover:text-[#14101f]" href="https://github.com/JulianVaca/taskboard" target="_blank" rel="noreferrer">
+              {t("footer.code")}
             </a>
-            <a className="transition-colors hover:text-violet-600 dark:hover:text-violet-400" href={`${api.url}/api/health`} target="_blank" rel="noreferrer">
-              Estado de la API
+            <a className="inked rounded-[3px] px-3 py-1.5 text-ink-text underline [--depth:3px] hover:[--panel-bg:var(--yellow)] hover:text-[#14101f]" href={`${api.url}/api/health`} target="_blank" rel="noreferrer">
+              {t("footer.api")}
             </a>
           </nav>
         </footer>
       </div>
 
-      <Toaster position="bottom-center" theme={theme} richColors closeButton toastOptions={{ className: "font-sans" }} />
+      <Toaster position="bottom-center" theme={theme} closeButton toastOptions={{ className: "comic-toast" }} />
     </MotionConfig>
   );
 }
