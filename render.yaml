@@ -16,6 +16,7 @@ services:
     runtime: node
     plan: free
     region: virginia
+    branch: produccion
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -39,6 +40,7 @@ services:
   - type: web
     name: taskboard-web
     runtime: static
+    branch: produccion
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist

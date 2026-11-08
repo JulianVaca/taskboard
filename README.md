@@ -28,11 +28,32 @@ taskboard/
 │   ├── src/routes/     endpoints /api/tasks
 │   ├── src/db.js       pool de PostgreSQL y migración
 │   └── test/           pruebas automáticas (node:test + supertest)
-├── frontend/           interfaz (React + Vite)
-│   └── src/            App.jsx, cliente api.js y estilos
+├── frontend/           interfaz (React + Vite + Tailwind CSS + Motion)
+│   └── src/
+│       ├── api.js          cliente de la API REST
+│       ├── hooks/          useTasks (CRUD optimista) y useTheme
+│       └── components/     TopBar, Hero, TaskComposer, FilterTabs, TaskItem…
 ├── docs/               guía de despliegue, evidencias y reflexión
 └── render.yaml         Blueprint: los tres servicios en un clic
 ```
+
+## Interfaz
+
+| Librería | Uso |
+|---|---|
+| React 19 + Vite 8 | Aplicación y empaquetado |
+| Tailwind CSS 4 | Sistema de estilos, tema claro y oscuro |
+| Motion | Animaciones de lista, filtros, casillas y anillo de progreso |
+| Lucide | Íconos |
+| Sonner | Notificaciones de éxito y error |
+
+Funciones:
+
+- Crear tareas con validación de campo vacío. La tecla `/` enfoca el campo.
+- Completar, editar con doble clic y eliminar tareas.
+- Filtros por estado, anillo de progreso y contador de pendientes.
+- Indicador de estado de la API y aviso mientras el servidor gratuito despierta.
+- Tema claro y oscuro, diseño responsivo y respeto por "reducir movimiento" del sistema.
 
 ## API REST
 
@@ -103,6 +124,27 @@ cd backend && npm test
 | `VITE_API_URL` | `http://localhost:3000` | `https://taskboard-api-9oyi.onrender.com`, o `https://api.skillware.online` cuando el dominio esté activo |
 
 Vite incrusta `VITE_API_URL` al compilar. Si la cambias en Render, lanza **Manual Deploy → Deploy latest commit**.
+
+## Ramas y ambientes
+
+| Rama | Propósito | Despliegue |
+|---|---|---|
+| `desarrollo` | Trabajo diario e integración de cambios | GitHub Actions ejecuta pruebas y build en cada push |
+| `produccion` | Versión estable publicada | Render despliega automáticamente cada cambio |
+| `main` | Rama por defecto que pide el taller, espejo de `produccion` | — |
+
+Flujo de trabajo:
+
+```bash
+git switch desarrollo
+# ...cambios y commits...
+git push
+gh pr create --base produccion --head desarrollo --title "Release: ..."
+# cuando el CI pasa, se fusiona el PR y Render despliega producción
+git switch main && git merge --ff-only origin/produccion && git push
+```
+
+La rama `produccion` está protegida: solo acepta cambios mediante pull request con el CI en verde.
 
 ## Despliegue
 
