@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../../i18n.jsx";
 
 /** Medidor de progreso impreso: barra entintada con relleno de trama magenta. */
 export default function ProgressMeter({ done, all }) {

@@ -16,6 +16,10 @@
         try { t = localStorage.getItem("taskboard-theme") || "system"; } catch (e) {}
         var dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
         if (dark) document.documentElement.classList.add("dark");
+        var s = "comic";
+        try { s = localStorage.getItem("taskboard-skin") || "comic"; } catch (e) {}
+        if (["classic", "comic", "brutal"].indexOf(s) < 0) s = "comic";
+        document.documentElement.dataset.skin = s;
       })();
     </script>
   </head>
