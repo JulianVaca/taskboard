@@ -2,8 +2,6 @@ import { motion } from "motion/react";
 import { CircleCheckBig, CloudOff, ListTodo, RotateCw, Sparkles } from "lucide-react";
 import { useI18n } from "../../i18n.jsx";
 
-const onTwos = (frames) => (p) => Math.floor(p * frames) / frames;
-
 /** Viñetas fantasma mientras cargan las tareas, con cartela si el servidor gratuito está despertando. */
 export function LoadingState({ slow }) {
   const { t } = useI18n();
@@ -12,9 +10,9 @@ export function LoadingState({ slow }) {
       <span className="sr-only">{t("loading.sr")}</span>
       {slow && (
         <motion.div
-          initial={{ opacity: 0, rotate: -4 }}
+          initial={{ opacity: 0, rotate: -3 }}
           animate={{ opacity: 1, rotate: -1 }}
-          transition={{ duration: 0.3, ease: onTwos(4) }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
           className="caption block px-4 py-3 normal-case"
         >
           <p className="font-comic text-xl tracking-wider uppercase">{t("waking.title")}</p>
@@ -23,7 +21,7 @@ export function LoadingState({ slow }) {
             <motion.div
               className="h-full w-1/3 bg-magenta"
               animate={{ x: ["-100%", "300%"] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: onTwos(10) }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
             />
           </div>
         </motion.div>
@@ -46,9 +44,9 @@ export function ErrorState({ message, onRetry }) {
   return (
     <motion.div
       role="alert"
-      initial={{ scale: 0.7, opacity: 0 }}
+      initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3, ease: onTwos(5) }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
       className="inked flex flex-col items-center rounded-[3px] px-6 py-10 text-center [--extrude:var(--danger)]"
     >
       <span className="lettering text-5xl [-webkit-text-stroke-color:var(--ink)]" aria-hidden="true">
@@ -83,14 +81,14 @@ export function EmptyState({ filter }) {
   return (
     <motion.div
       key={filter}
-      initial={{ opacity: 0, scale: 0.85 }}
+      initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.25, ease: onTwos(4) }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className="inked flex flex-col items-center rounded-[3px] px-6 py-12 text-center [--depth:3px] [--panel-bg:radial-gradient(rgb(128_120_160/0.16)_30%,transparent_34%)_0_0/8px_8px,var(--paper)]"
     >
       <motion.span
         animate={{ y: [0, -6, 0], rotate: [-4, 4, -4] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: onTwos(8) }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         className="grid size-14 place-items-center rounded-[4px] border-[3px] border-ink bg-cyan text-[#14101f] shadow-[3px_3px_0_var(--ink)]"
       >
         <Icon className="size-7" strokeWidth={2.5} />
