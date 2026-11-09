@@ -78,3 +78,18 @@ test("Rutas desconocidas devuelven 404 en JSON", async () => {
   const res = await request(app).get("/api/nada").expect(404);
   assert.ok(res.body.error);
 });
+
+test("Rate limiting: responde 429 al superar el límite de peticiones", async () => {
+  process.env.RATE_LIMIT_MAX = "3";
+  const { Pool } = newDb().adapters.createPg();
+  const pool = new Pool();
+  await migrate(pool);
+  const limitedApp = createApp(pool);
+  delete process.env.RATE_LIMIT_MAX;
+
+  for (let i = 0; i < 3; i++) {
+    await request(limitedApp).get("/api/tasks").expect(200);
+  }
+  const res = await request(limitedApp).get("/api/tasks").expect(429);
+  assert.match(res.body.error, /Demasiadas peticiones/);
+});
