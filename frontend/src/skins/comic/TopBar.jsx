@@ -117,7 +117,7 @@ function Bar({ apiStatus, theme, onToggleTheme }) {
               initial={{ scale: 0, rotate: -90 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 90 }}
-              transition={{ duration: 0.2, ease: (p) => Math.floor(p * 4) / 4 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
             >
               {theme === "dark" ? <Sun className="size-5" strokeWidth={2.5} /> : <Moon className="size-5" strokeWidth={2.5} />}
             </motion.span>

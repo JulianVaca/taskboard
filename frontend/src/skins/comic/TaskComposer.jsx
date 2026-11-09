@@ -31,7 +31,7 @@ export default function TaskComposer({ onAdd, disabled }) {
 
   const fail = (message) => {
     setError(message);
-    animate(scope.current, { x: [0, -10, 10, -6, 6, 0] }, { duration: 0.36, ease: (p) => Math.floor(p * 6) / 6 });
+    animate(scope.current, { x: [0, -10, 10, -6, 6, 0] }, { duration: 0.32, ease: "easeInOut" });
     inputRef.current?.focus();
   };
 

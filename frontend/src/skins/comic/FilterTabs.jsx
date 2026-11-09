@@ -26,7 +26,7 @@ export default function FilterTabs({ value, onChange, counts }) {
               <motion.span
                 layoutId="filter-plate"
                 className="absolute inset-0 rounded-[2px] border-2 border-ink bg-magenta"
-                transition={{ duration: 0.18, ease: (p) => Math.floor(p * 4) / 4 }}
+                transition={{ type: "spring", stiffness: 520, damping: 34 }}
               />
             )}
             <span className="relative flex items-center justify-center gap-1">
