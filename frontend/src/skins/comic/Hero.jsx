@@ -11,13 +11,13 @@ export default function Hero({ counts, ready }) {
 
   return (
     <section className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
+      <div className="@container min-w-0 flex-1">
         <motion.h1
           key={lang}
           initial={{ y: 12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="lettering origin-left text-[clamp(2.75rem,10vw,4.75rem)] leading-[0.95] text-balance"
+          className="lettering origin-left text-[clamp(2.35rem,14cqi,4.35rem)] leading-[0.95] text-balance"
         >
           {t(greetingKey(now))}
         </motion.h1>
