@@ -13,7 +13,7 @@ export default function Bento({ counts, ready }) {
 
   return (
     <section className="grid grid-cols-6 gap-4 sm:gap-5">
-      <motion.div initial={enter} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={spring(0)} className="slab press relative col-span-6 sm:col-span-4">
+      <motion.div initial={enter} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={spring(0)} className="@container slab press relative col-span-6 min-w-0 sm:col-span-4">
         <div className="flex items-center gap-3 rounded-t-[10px] border-b-4 border-b-ink bg-b-sun py-2 pr-24 pl-4 text-b-on-accent">
           <span className="hidden shrink-0 gap-1.5 sm:flex" aria-hidden="true">
             <span className="size-3 rounded-full border-[2.5px] border-b-ink bg-b-heat" />
@@ -22,8 +22,8 @@ export default function Bento({ counts, ready }) {
           </span>
           <span className="text-xs font-black uppercase [font-stretch:110%]">{dateLabel(now, lang)}</span>
         </div>
-        <div className="px-5 pt-4 pb-5">
-          <h1 key={lang} className="display-wide text-[clamp(2.3rem,8.5vw,3.6rem)] leading-[0.92] text-balance">
+        <div className="overflow-hidden px-5 pt-4 pb-5">
+          <h1 key={lang} className="display-wide max-w-full text-[clamp(1.75rem,12.5cqi,2.85rem)] leading-[0.94] text-balance">
             {t(greetingKey(now)).replace(/[¡!]/g, "")}
           </h1>
           <p className="mt-3 max-w-sm font-semibold text-b-text-soft">{boardSummary(t, counts, ready)}</p>
