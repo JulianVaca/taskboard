@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const { rateLimit } = require("express-rate-limit");
 const { tasksRouter } = require("./routes/tasks");
 const { authRouter } = require("./routes/auth");
 const { requireAuth } = require("./auth");
@@ -36,10 +37,19 @@ function createApp(pool) {
   );
   app.use(express.json({ limit: "10kb" }));
 
+  // Seguridad (OWASP): limita cuántas peticiones puede hacer cada IP a la API de tareas.
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // ventana de 15 minutos
+    limit: Number(process.env.RATE_LIMIT_MAX) || 100, // máximo de peticiones por IP en esa ventana
+    standardHeaders: "draft-8", // informa el límite en los encabezados RateLimit
+    legacyHeaders: false,
+    message: { error: "Demasiadas peticiones, intenta de nuevo en unos minutos" },
+  });
+
   app.get("/", (req, res) => res.json({ name: "TaskBoard API", docs: "/api/health, /api/auth, /api/tasks" }));
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
   app.use("/api/auth", authRouter(pool));
-  app.use("/api/tasks", requireAuth, tasksRouter(pool));
+  app.use("/api/tasks", limiter, requireAuth, tasksRouter(pool));
 
   app.use((req, res) => res.status(404).json({ error: "Ruta no encontrada" }));
 
