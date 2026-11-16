@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { CheckCheck, Moon, Sun } from "lucide-react";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
+import NotificationBell from "../../components/NotificationBell.jsx";
+import UserMenu from "../../components/UserMenu.jsx";
 
 const DOT = {
   online: "bg-[#19c37d]",
@@ -69,7 +71,7 @@ function Bar({ apiStatus, theme, onToggleTheme }) {
 
       <div className="flex items-center gap-2 sm:gap-2.5">
         <div
-          className="inked flex h-10 items-center gap-2 rounded-[3px] px-2.5 text-xs font-bold [--depth:3px] sm:px-3"
+          className="inked hidden h-10 items-center gap-2 rounded-[3px] px-2.5 text-xs font-bold [--depth:3px] min-[430px]:flex sm:px-3"
           role="status"
           aria-live="polite"
         >
@@ -105,6 +107,8 @@ function Bar({ apiStatus, theme, onToggleTheme }) {
           })}
         </div>
 
+        <NotificationBell buttonClass="inked grid size-9 sm:size-10 shrink-0 cursor-pointer place-items-center rounded-[3px] text-ink-text [--depth:3px] hover:[--panel-bg:var(--yellow)] hover:text-[#14101f]" />
+
         <button
           type="button"
           onClick={onToggleTheme}
@@ -123,6 +127,8 @@ function Bar({ apiStatus, theme, onToggleTheme }) {
             </motion.span>
           </AnimatePresence>
         </button>
+
+        <UserMenu buttonClass="inked grid size-9 sm:size-10 shrink-0 cursor-pointer place-items-center rounded-[3px] font-comic text-base tracking-wider text-[#14101f] [--depth:3px] [--panel-bg:var(--yellow)]" />
       </div>
     </header>
   );

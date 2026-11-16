@@ -1,6 +1,8 @@
 import { CheckCheck, Moon, Sun } from "lucide-react";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
+import NotificationBell from "../../components/NotificationBell.jsx";
+import UserMenu from "../../components/UserMenu.jsx";
 
 const DOT = { online: "bg-[#3ddc97]", checking: "bg-b-sun", waking: "bg-b-sun", offline: "bg-b-heat" };
 const LANGS = [
@@ -40,8 +42,8 @@ function Group({ label, items, value, onChange, size = "h-10", compact = false }
 export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin }) {
   const { t, lang, setLang } = useI18n();
   return (
-    // Móvil: marca + idioma/tema arriba, estado + estilo abajo. Escritorio: estado junto a los controles.
-    <header className="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-4 [grid-template-areas:'brand_controls'_'status_skin'] sm:grid-cols-[1fr_auto_auto] sm:[grid-template-areas:'brand_status_controls'_'skin_skin_skin']">
+    // Marca + controles arriba; estado + estilo abajo (así caben la campanita y la cuenta).
+    <header className="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-4 [grid-template-areas:'brand_controls'_'status_skin']">
         <a href="/" className="flex min-w-0 items-center gap-3 [grid-area:brand]" aria-label={t("brand.home")}>
           <span className="hidden size-11 shrink-0 -rotate-6 place-items-center rounded-[10px] border-4 border-b-ink bg-b-heat text-b-on-accent shadow-[4px_4px_0_var(--b-ink)] sm:grid">
             <CheckCheck className="size-6" strokeWidth={3} />
@@ -49,14 +51,15 @@ export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin 
           <span className="display-wide text-[1.05rem] leading-none [font-stretch:100%] min-[380px]:text-lg sm:text-2xl sm:[font-stretch:118%]">TaskBoard</span>
         </a>
 
-        <div role="status" aria-live="polite" className="ticket flex h-10 items-center gap-2 justify-self-start px-3.5 text-xs font-black whitespace-nowrap uppercase [font-stretch:105%] [grid-area:status] sm:justify-self-end">
+        <div role="status" aria-live="polite" className="ticket flex h-10 items-center gap-2 justify-self-start px-3.5 text-xs font-black whitespace-nowrap uppercase [font-stretch:105%] [grid-area:status]">
           <span className={clsx("size-2.5 shrink-0 rounded-full ring-2 ring-b-ink", DOT[apiStatus])} />
           <span className="hidden sm:inline">{t(`status.${apiStatus}`)}</span>
           <span className="sm:hidden">{t(`status.short.${apiStatus}`)}</span>
         </div>
 
         <div className="flex items-center gap-2 [grid-area:controls]">
-          <Group label={t("lang.label")} items={LANGS.map((l) => ({ ...l, lang: l.id }))} value={lang} onChange={setLang} />
+          <Group label={t("lang.label")} items={LANGS.map((l) => ({ ...l, lang: l.id }))} value={lang} onChange={setLang} compact />
+          <NotificationBell buttonClass="slab press grid size-9 sm:size-10 shrink-0 cursor-pointer place-items-center rounded-[10px] shadow-[4px_4px_0_var(--b-ink)] hover:bg-b-sun hover:text-b-on-accent" />
           <button
             type="button"
             onClick={onToggleTheme}
@@ -65,6 +68,7 @@ export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin 
           >
             {theme === "dark" ? <Sun className="size-5" strokeWidth={2.75} /> : <Moon className="size-5" strokeWidth={2.75} />}
           </button>
+          <UserMenu buttonClass="grid size-9 sm:size-10 shrink-0 cursor-pointer place-items-center rounded-[10px] border-4 border-b-ink bg-b-para font-black text-b-on-para shadow-[4px_4px_0_var(--b-ink)]" />
         </div>
 
         <div className="flex items-center justify-end gap-2.5 [grid-area:skin]">

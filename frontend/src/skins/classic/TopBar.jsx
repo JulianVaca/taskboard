@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { CheckCheck, Moon, Sun } from "lucide-react";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
+import NotificationBell from "../../components/NotificationBell.jsx";
+import UserMenu from "../../components/UserMenu.jsx";
 
 const STATUS = {
   online: { dot: "bg-emerald-500", ping: "bg-emerald-400" },
@@ -83,6 +85,8 @@ export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin 
 
           <Segmented label={t("lang.label")} items={LANGS.map((l) => ({ ...l, lang: l.id }))} value={lang} onChange={setLang} layoutId="classic-lang" />
 
+          <NotificationBell buttonClass={clsx(pill, "grid size-9 shrink-0 cursor-pointer place-items-center text-zinc-700 transition-colors hover:bg-white dark:text-zinc-200 dark:hover:bg-white/10")} />
+
           <button
             type="button"
             onClick={onToggleTheme}
@@ -101,6 +105,8 @@ export default function TopBar({ apiStatus, theme, onToggleTheme, skin, setSkin 
               </motion.span>
             </AnimatePresence>
           </button>
+
+          <UserMenu buttonClass="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/30 transition hover:brightness-110" />
         </div>
       </header>
 

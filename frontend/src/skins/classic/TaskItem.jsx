@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Pencil, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
-import { relativeTime } from "../../shared/format.js";
+import { fullDate, relativeTime } from "../../shared/format.js";
 import { useTaskEdit } from "../../shared/useTaskEdit.js";
 
 function Checkbox({ checked, disabled, onChange, label }) {
@@ -45,6 +45,8 @@ const iconBtn = "grid size-8 cursor-pointer place-items-center rounded-lg text-z
 const TaskItem = forwardRef(function TaskItem({ task, busy, onToggle, onRename, onRemove }, ref) {
   const { t, lang } = useI18n();
   const { editing, startEdit, inputProps } = useTaskEdit(task, onRename);
+  // Si está completada mostramos cuándo se completó; si no, cuándo se creó.
+  const when = task.done && task.completed_at ? task.completed_at : task.created_at;
 
   return (
     <motion.li
@@ -83,7 +85,10 @@ const TaskItem = forwardRef(function TaskItem({ task, busy, onToggle, onRename, 
           </p>
         )}
         <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-          {task.done ? t("task.doneAt") : t("task.created")} · {relativeTime(task.created_at, lang, t("task.justNow"))}
+          {task.done ? t("task.doneAt") : t("task.created")} ·{" "}
+          <time dateTime={when} title={fullDate(when, lang)}>
+            {relativeTime(when, lang, t("task.justNow"))}
+          </time>
         </p>
       </div>
 

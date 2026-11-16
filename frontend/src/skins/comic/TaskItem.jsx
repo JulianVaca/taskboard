@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import Burst from "./Burst.jsx";
 import { useI18n } from "../../i18n.jsx";
-import { relativeTime } from "../../shared/format.js";
+import { fullDate, relativeTime } from "../../shared/format.js";
 import { useTaskEdit } from "../../shared/useTaskEdit.js";
 
 // Cada viñeta queda un poco torcida, como pegada a mano; el ángulo depende del id para ser estable.
@@ -49,6 +49,8 @@ const iconBtn =
 const TaskItem = forwardRef(function TaskItem({ task, busy, onToggle, onRename, onRemove }, ref) {
   const { t, lang } = useI18n();
   const { editing, startEdit, inputProps } = useTaskEdit(task, onRename);
+  // Si está completada mostramos cuándo se completó; si no, cuándo se creó.
+  const when = task.done && task.completed_at ? task.completed_at : task.created_at;
   const [burst, setBurst] = useState(null);
   const words = t("burst");
 
@@ -105,7 +107,10 @@ const TaskItem = forwardRef(function TaskItem({ task, busy, onToggle, onRename, 
           </p>
         )}
         <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-ink-soft [font-stretch:85%]">
-          {task.done ? t("task.doneAt") : t("task.created")} · {relativeTime(task.created_at, lang, t("task.justNow"))}
+          {task.done ? t("task.doneAt") : t("task.created")} ·{" "}
+          <time dateTime={when} title={fullDate(when, lang)}>
+            {relativeTime(when, lang, t("task.justNow"))}
+          </time>
         </p>
       </div>
 

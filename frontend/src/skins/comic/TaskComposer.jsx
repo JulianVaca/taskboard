@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useAnimate } from "motion/react";
 import { LoaderCircle, PencilLine, Plus } from "lucide-react";
-import { toast } from "sonner";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
 
@@ -44,7 +43,6 @@ export default function TaskComposer({ onAdd, disabled }) {
     try {
       await onAdd(clean);
       setTitle("");
-      toast.success(t("toast.created"), { description: clean });
     } catch (err) {
       fail(describeError(err));
     } finally {

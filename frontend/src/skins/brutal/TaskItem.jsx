@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { useI18n } from "../../i18n.jsx";
-import { relativeTime } from "../../shared/format.js";
+import { fullDate, relativeTime } from "../../shared/format.js";
 import { useTaskEdit } from "../../shared/useTaskEdit.js";
 
 const iconBtn =
@@ -12,6 +12,8 @@ const iconBtn =
 const TaskItem = forwardRef(function TaskItem({ task, index, busy, onToggle, onRename, onRemove }, ref) {
   const { t, lang } = useI18n();
   const { editing, startEdit, inputProps } = useTaskEdit(task, onRename);
+  // Si está completada mostramos cuándo se completó; si no, cuándo se creó.
+  const when = task.done && task.completed_at ? task.completed_at : task.created_at;
   const [stamp, setStamp] = useState(0);
 
   useEffect(() => {
@@ -94,7 +96,10 @@ const TaskItem = forwardRef(function TaskItem({ task, index, busy, onToggle, onR
             task.done ? "bg-[#fffdf9] text-[#351c4d]" : "bg-b-para text-b-on-para"
           )}
         >
-          {task.done ? t("task.doneAt") : t("task.created")} · {relativeTime(task.created_at, lang, t("task.justNow"))}
+          {task.done ? t("task.doneAt") : t("task.created")} ·{" "}
+          <time dateTime={when} title={fullDate(when, lang)}>
+            {relativeTime(when, lang, t("task.justNow"))}
+          </time>
         </span>
       </div>
 

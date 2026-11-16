@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import { api } from "../api.js";
 import { useI18n } from "../i18n.jsx";
+import { useNotifications } from "./useNotifications.jsx";
 
 const SLOW_MS = 3000; // a partir de aquí avisamos que el servidor gratuito está despertando
 
@@ -11,6 +11,7 @@ const byStatusThenId = (a, b) => Number(a.done) - Number(b.done) || a.id - b.id;
 /** Estado de las tareas y operaciones CRUD contra la API, con actualizaciones optimistas. */
 export function useTasks() {
   const { t, describeError } = useI18n();
+  const { notify } = useNotifications();
   // Las notificaciones usan siempre el idioma vigente aunque la operación haya empezado antes.
   const i18n = useRef({ t, describeError });
   i18n.current = { t, describeError };
@@ -58,19 +59,21 @@ export function useTasks() {
   const add = async (title) => {
     const created = await api.create(title);
     setTasks((prev) => [...prev, created]);
+    notify("success", i18n.current.t("toast.created"), created.title);
     return created;
   };
 
   const toggle = async (task) => {
     const { t, describeError } = i18n.current;
     markBusy(task.id, true);
-    replace({ ...task, done: !task.done });
+    replace({ ...task, done: !task.done, completed_at: task.done ? null : new Date().toISOString() });
     try {
       replace(await api.setDone(task.id, !task.done));
-      if (!task.done) toast.success(i18n.current.t("toast.completed"), { description: task.title });
+      if (!task.done) notify("success", i18n.current.t("toast.completed"), task.title);
+      else notify("info", i18n.current.t("toast.reopened"), task.title);
     } catch (err) {
       replace(task);
-      toast.error(t("toast.updateFail"), { description: describeError(err) });
+      notify("error", t("toast.updateFail"), describeError(err));
     } finally {
       markBusy(task.id, false);
     }
@@ -83,9 +86,10 @@ export function useTasks() {
     replace({ ...task, title });
     try {
       replace(await api.rename(task.id, title));
+      notify("info", i18n.current.t("toast.renamed"), title);
     } catch (err) {
       replace(task);
-      toast.error(t("toast.renameFail"), { description: describeError(err) });
+      notify("error", t("toast.renameFail"), describeError(err));
     } finally {
       markBusy(task.id, false);
     }
@@ -97,11 +101,11 @@ export function useTasks() {
     setTasks((prev) => prev.filter((x) => x.id !== task.id));
     try {
       await api.remove(task.id);
-      toast(i18n.current.t("toast.deleted"), { description: task.title });
+      notify("info", i18n.current.t("toast.deleted"), task.title);
     } catch (err) {
       if (err.status !== 404) {
         setTasks((prev) => [...prev, task]);
-        toast.error(t("toast.deleteFail"), { description: describeError(err) });
+        notify("error", t("toast.deleteFail"), describeError(err));
       }
     } finally {
       markBusy(task.id, false);

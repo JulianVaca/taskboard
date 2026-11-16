@@ -38,6 +38,18 @@ export function relativeTime(dateStr, lang, justNow) {
   return justNow;
 }
 
+const fullCache = new Map();
+
+/** Fecha y hora completas, por ejemplo "lunes, 16 de noviembre de 2026, 3:52 p. m.". */
+export function fullDate(dateStr, lang) {
+  let dtf = fullCache.get(lang);
+  if (!dtf) {
+    dtf = new Intl.DateTimeFormat(lang, { dateStyle: "full", timeStyle: "short" });
+    fullCache.set(lang, dtf);
+  }
+  return dtf.format(new Date(dateStr));
+}
+
 export function greetingKey(date) {
   const h = date.getHours();
   if (h < 12) return "greet.morning";
