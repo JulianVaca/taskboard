@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const { tasksRouter } = require("./routes/tasks");
+const { authRouter } = require("./routes/auth");
+const { requireAuth } = require("./auth");
 
 const DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
@@ -34,9 +36,10 @@ function createApp(pool) {
   );
   app.use(express.json({ limit: "10kb" }));
 
-  app.get("/", (req, res) => res.json({ name: "TaskBoard API", docs: "/api/health, /api/tasks" }));
+  app.get("/", (req, res) => res.json({ name: "TaskBoard API", docs: "/api/health, /api/auth, /api/tasks" }));
   app.get("/api/health", (req, res) => res.json({ status: "ok" }));
-  app.use("/api/tasks", tasksRouter(pool));
+  app.use("/api/auth", authRouter(pool));
+  app.use("/api/tasks", requireAuth, tasksRouter(pool));
 
   app.use((req, res) => res.status(404).json({ error: "Ruta no encontrada" }));
 

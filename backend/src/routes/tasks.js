@@ -31,16 +31,19 @@ function parseTitle(raw) {
 function tasksRouter(pool) {
   const router = Router();
 
-  // GET /api/tasks → lista todas las tareas
+  // GET /api/tasks → lista las tareas del usuario que inició sesión
   router.get("/", async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM tasks ORDER BY id");
+    const { rows } = await pool.query("SELECT * FROM tasks WHERE user_id = $1 ORDER BY id", [req.user.id]);
     res.json(rows);
   });
 
   // POST /api/tasks → crea una tarea
   router.post("/", async (req, res) => {
     const title = parseTitle(req.body?.title);
-    const { rows } = await pool.query("INSERT INTO tasks (title) VALUES ($1) RETURNING *", [title]);
+    const { rows } = await pool.query(
+      "INSERT INTO tasks (title, user_id) VALUES ($1, $2) RETURNING *",
+      [title, req.user.id]
+    );
     res.status(201).json(rows[0]);
   });
 
@@ -64,10 +67,15 @@ function tasksRouter(pool) {
     const { rows } = await pool.query(
       `UPDATE tasks
           SET done  = COALESCE($1, done),
-              title = COALESCE($2, title)
-        WHERE id = $3
+              title = COALESCE($2, title),
+              completed_at = CASE
+                WHEN $1 = true  THEN NOW()
+                WHEN $1 = false THEN NULL
+                ELSE completed_at
+              END
+        WHERE id = $3 AND user_id = $4
         RETURNING *`,
-      [done, title, id]
+      [done, title, id, req.user.id]
     );
     if (rows.length === 0) throw new HttpError(404, "Tarea no encontrada");
     res.json(rows[0]);
@@ -76,7 +84,10 @@ function tasksRouter(pool) {
   // DELETE /api/tasks/:id → elimina una tarea
   router.delete("/:id", async (req, res) => {
     const id = parseId(req.params.id);
-    const { rowCount } = await pool.query("DELETE FROM tasks WHERE id = $1", [id]);
+    const { rowCount } = await pool.query("DELETE FROM tasks WHERE id = $1 AND user_id = $2", [
+      id,
+      req.user.id,
+    ]);
     if (rowCount === 0) throw new HttpError(404, "Tarea no encontrada");
     res.status(204).end();
   });

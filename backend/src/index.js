@@ -2,8 +2,10 @@ require("dotenv").config({ quiet: true });
 
 const { createApp, allowedOrigins } = require("./app");
 const { createPool, migrate } = require("./db");
+const { getSecret } = require("./auth");
 
 async function main() {
+  getSecret(); // si falta JWT_SECRET en Render, el servicio avisa al arrancar y no después
   const pool = createPool();
   await migrate(pool);
 

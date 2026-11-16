@@ -1,7 +1,15 @@
--- Esquema de TaskBoard. Es idempotente: se puede ejecutar varias veces sin error.
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(80) NOT NULL,
+  email VARCHAR(254) NOT NULL UNIQUE,
+  password_hash VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS tasks (
   id SERIAL PRIMARY KEY,
   title VARCHAR(200) NOT NULL,
   done BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
