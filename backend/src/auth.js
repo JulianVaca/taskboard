@@ -11,9 +11,9 @@ function getSecret() {
   return "secreto-solo-para-desarrollo";
 }
 
-// Crea un token que dura 7 días y guarda el id y el nombre del usuario
+// Crea un token que dura 7 días y guarda el id, el nombre y el correo del usuario
 function createToken(user) {
-  return jwt.sign({ sub: String(user.id), name: user.name }, getSecret(), { expiresIn: "7d" });
+  return jwt.sign({ sub: String(user.id), name: user.name, email: user.email }, getSecret(), { expiresIn: "7d" });
 }
 
 // Middleware: deja pasar solo si la petición trae un token válido
@@ -24,7 +24,7 @@ function requireAuth(req, res, next) {
   }
   try {
     const payload = jwt.verify(token, getSecret());
-    req.user = { id: Number(payload.sub), name: payload.name };
+    req.user = { id: Number(payload.sub), name: payload.name, email: payload.email };
     next();
   } catch {
     res.status(401).json({ error: "Tu sesión expiró, inicia sesión de nuevo" });

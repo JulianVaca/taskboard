@@ -1,8 +1,10 @@
+const crypto = require("node:crypto");
 const { Router } = require("express");
 const bcrypt = require("bcryptjs");
 const { rateLimit } = require("express-rate-limit");
 const { HttpError } = require("./tasks");
 const { createToken, requireAuth } = require("../auth");
+const { sendWelcomeEmail, sendPasswordResetEmail } = require("../mailer");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -55,6 +57,7 @@ function authRouter(pool) {
         "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email",
         [name, email, hash]
       );
+      sendWelcomeEmail(rows[0]).catch(() => {});
       res.status(201).json({ token: createToken(rows[0]), user: publicUser(rows[0]) });
     } catch (err) {
       if (err.code === "23505") throw new HttpError(409, "Ese correo ya está registrado");
@@ -70,6 +73,53 @@ function authRouter(pool) {
     const user = rows[0];
     const ok = user && (await bcrypt.compare(password, user.password_hash));
     if (!ok) throw new HttpError(401, "Correo o contraseña incorrectos");
+    res.json({ token: createToken(user), user: publicUser(user) });
+  });
+
+  // POST /api/auth/forgot-password → genera un código de 6 dígitos y lo envía al correo
+  router.post("/forgot-password", limiter, async (req, res) => {
+    const email = parseEmail(req.body?.email);
+    const { rows } = await pool.query("SELECT id, name, email FROM users WHERE email = $1", [email]);
+    const user = rows[0];
+    if (user) {
+      const code = String(crypto.randomInt(100000, 1000000));
+      const codeHash = await bcrypt.hash(code, 10);
+      await pool.query(
+        "UPDATE users SET reset_code_hash = $1, reset_expires_at = NOW() + INTERVAL '15 minutes' WHERE id = $2",
+        [codeHash, user.id]
+      );
+      await sendPasswordResetEmail({ name: user.name, email: user.email, code });
+    }
+    res.json({ ok: true, message: "Si el correo está registrado, enviamos un código de 6 dígitos" });
+  });
+
+  // POST /api/auth/reset-password → valida el código y actualiza la contraseña
+  router.post("/reset-password", limiter, async (req, res) => {
+    const email = parseEmail(req.body?.email);
+    const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+    if (!/^\d{6}$/.test(code)) {
+      throw new HttpError(400, "El código debe tener 6 dígitos");
+    }
+    const password = parsePassword(req.body?.password);
+    const { rows } = await pool.query(
+      "SELECT id, name, email, reset_code_hash, reset_expires_at FROM users WHERE email = $1",
+      [email]
+    );
+    const user = rows[0];
+    const valid =
+      user &&
+      user.reset_code_hash &&
+      user.reset_expires_at &&
+      new Date(user.reset_expires_at) > new Date() &&
+      (await bcrypt.compare(code, user.reset_code_hash));
+    if (!valid) {
+      throw new HttpError(400, "Código inválido o expirado");
+    }
+    const hash = await bcrypt.hash(password, 10);
+    await pool.query(
+      "UPDATE users SET password_hash = $1, reset_code_hash = NULL, reset_expires_at = NULL WHERE id = $2",
+      [hash, user.id]
+    );
     res.json({ token: createToken(user), user: publicUser(user) });
   });
 

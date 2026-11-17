@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion, useAnimate } from "motion/react";
-import { ArrowRight, CheckCheck, Eye, EyeOff, LoaderCircle, Lock, Mail, Moon, ShieldCheck, Sun, User } from "lucide-react";
+import { ArrowRight, CheckCheck, Eye, EyeOff, KeyRound, LoaderCircle, Lock, Mail, Moon, ShieldCheck, Sun, User } from "lucide-react";
 import clsx from "clsx";
 import ClassicBackground from "../skins/classic/Background.jsx";
 import ComicBackground from "../skins/comic/Background.jsx";
@@ -145,14 +145,15 @@ function Field({ look, icon: Icon, label, hint, children }) {
   );
 }
 
-/** Pantalla de inicio de sesión y registro; se viste con el estilo elegido (Clásico, Cómic o Brutal). */
+/** Pantalla de inicio de sesión, registro y recuperación; se viste con el estilo elegido (Clásico, Cómic o Brutal). */
 export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
   const { t, lang, setLang, describeError } = useI18n();
-  const { login, register, notice } = useAuth();
-  const [mode, setMode] = useState("login"); // login | register
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const { login, register, forgotPassword, resetPassword, notice } = useAuth();
+  const [mode, setMode] = useState("login"); // login | register | forgot | reset
+  const [form, setForm] = useState({ name: "", email: "", code: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [saving, setSaving] = useState(false);
   const [slow, setSlow] = useState(false);
   const [scope, animate] = useAnimate();
@@ -160,6 +161,8 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
   const look = LOOK[skin] ?? LOOK.classic;
   const { Background } = look;
   const isRegister = mode === "register";
+  const isRecovery = mode === "forgot" || mode === "reset";
+  const needsPassword = mode === "login" || mode === "register" || mode === "reset";
   const inputClass = clsx("w-full pr-4 pl-11 outline-none", look.input);
 
   const set = (field) => (e) => {
@@ -170,6 +173,7 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
   const switchMode = (next) => {
     setMode(next);
     setError("");
+    setInfo("");
   };
 
   const fail = (message) => {
@@ -181,17 +185,27 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
     e.preventDefault();
     const name = form.name.trim();
     const email = form.email.trim();
+    const code = form.code.trim();
     // Validamos aquí también para dar respuesta inmediata (el backend vuelve a validar).
     if (isRegister && name.length < 2) return fail(t("auth.err.name"));
     if (!EMAIL_RE.test(email)) return fail(t("auth.err.email"));
-    if (form.password.length < 8) return fail(t("auth.err.password"));
+    if (mode === "reset" && !/^\d{6}$/.test(code)) return fail(t("auth.err.code"));
+    if (needsPassword && form.password.length < 8) return fail(t("auth.err.password"));
 
     setSaving(true);
     setError("");
     const slowTimer = setTimeout(() => setSlow(true), SLOW_MS);
     try {
-      if (isRegister) await register(name, email, form.password);
-      else await login(email, form.password);
+      if (mode === "register") await register(name, email, form.password);
+      else if (mode === "login") await login(email, form.password);
+      else if (mode === "forgot") {
+        await forgotPassword(email);
+        setMode("reset");
+        setInfo(t("auth.codeSent"));
+        setSaving(false);
+      } else {
+        await resetPassword(email, code, form.password);
+      }
     } catch (err) {
       fail(authError(err, t, describeError));
       setSaving(false);
@@ -274,31 +288,33 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
               </AnimatePresence>
 
               {/* Pestañas con un indicador que se desliza */}
-              <div role="tablist" aria-label={t("auth.tabs")} className={clsx("mt-6", look.tabs)}>
-                {["login", "register"].map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    role="tab"
-                    aria-selected={mode === m}
-                    onClick={() => switchMode(m)}
-                    className={clsx("relative cursor-pointer transition-colors", look.tab, mode === m ? look.tabOn : look.tabOff)}
-                  >
-                    {mode === m && (
-                      <motion.span
-                        layoutId={`auth-tab-${skin}`}
-                        className={clsx("absolute inset-0", look.tabPill)}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                      />
-                    )}
-                    <span className="relative">{t(`auth.${m}`)}</span>
-                  </button>
-                ))}
-              </div>
+              {!isRecovery && (
+                <div role="tablist" aria-label={t("auth.tabs")} className={clsx("mt-6", look.tabs)}>
+                  {["login", "register"].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      role="tab"
+                      aria-selected={mode === m}
+                      onClick={() => switchMode(m)}
+                      className={clsx("relative cursor-pointer transition-colors", look.tab, mode === m ? look.tabOn : look.tabOff)}
+                    >
+                      {mode === m && (
+                        <motion.span
+                          layoutId={`auth-tab-${skin}`}
+                          className={clsx("absolute inset-0", look.tabPill)}
+                          transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        />
+                      )}
+                      <span className="relative">{t(`auth.${m}`)}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
 
-              {notice && !error && (
+              {(info || notice) && !error && (
                 <p role="status" className={clsx("mt-5", look.notice)}>
-                  {t(notice)}
+                  {info || t(notice)}
                 </p>
               )}
 
@@ -317,38 +333,70 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
                   <input type="email" value={form.email} onChange={set("email")} autoComplete="email" maxLength={254} placeholder={t("auth.emailPh")} className={inputClass} />
                 </Field>
 
-                <Field look={look} icon={Lock} label={t("auth.password")} hint={isRegister ? t("auth.passwordHint") : undefined}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={set("password")}
-                    autoComplete={isRegister ? "new-password" : "current-password"}
-                    maxLength={72}
-                    placeholder={t("auth.passwordPh")}
-                    className={clsx(inputClass, "pr-12")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? t("auth.hide") : t("auth.show")}
-                    className={clsx("absolute right-2 grid size-8 cursor-pointer place-items-center transition-colors", look.eye)}
-                  >
-                    {showPassword ? <EyeOff className="size-4.5" /> : <Eye className="size-4.5" />}
-                  </button>
-                </Field>
+                {mode === "reset" && (
+                  <Field look={look} icon={KeyRound} label={t("auth.code")}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={form.code}
+                      onChange={set("code")}
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      placeholder={t("auth.codePh")}
+                      className={inputClass}
+                    />
+                  </Field>
+                )}
 
-                {isRegister && form.password.length > 0 && (
-                  <div aria-hidden="true" className="flex gap-1.5">
-                    {[1, 2, 3].map((level) => (
-                      <span
-                        key={level}
-                        className={clsx(
-                          "h-1.5 flex-1 rounded-full transition-colors",
-                          strength >= level ? ["bg-rose-400", "bg-amber-400", "bg-emerald-500"][strength - 1] : "bg-zinc-300/60 dark:bg-white/10"
-                        )}
+                {needsPassword && (
+                  <>
+                    <Field
+                      look={look}
+                      icon={Lock}
+                      label={mode === "reset" ? t("auth.newPassword") : t("auth.password")}
+                      hint={isRegister || mode === "reset" ? t("auth.passwordHint") : undefined}
+                    >
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={form.password}
+                        onChange={set("password")}
+                        autoComplete={isRegister || mode === "reset" ? "new-password" : "current-password"}
+                        maxLength={72}
+                        placeholder={t("auth.passwordPh")}
+                        className={clsx(inputClass, "pr-12")}
                       />
-                    ))}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? t("auth.hide") : t("auth.show")}
+                        className={clsx("absolute right-2 grid size-8 cursor-pointer place-items-center transition-colors", look.eye)}
+                      >
+                        {showPassword ? <EyeOff className="size-4.5" /> : <Eye className="size-4.5" />}
+                      </button>
+                    </Field>
+
+                    {mode === "login" && (
+                      <div className="flex justify-end">
+                        <button type="button" onClick={() => switchMode("forgot")} className={clsx("cursor-pointer text-xs", look.link)}>
+                          {t("auth.forgot")}
+                        </button>
+                      </div>
+                    )}
+
+                    {(isRegister || mode === "reset") && form.password.length > 0 && (
+                      <div aria-hidden="true" className="flex gap-1.5">
+                        {[1, 2, 3].map((level) => (
+                          <span
+                            key={level}
+                            className={clsx(
+                              "h-1.5 flex-1 rounded-full transition-colors",
+                              strength >= level ? ["bg-rose-400", "bg-amber-400", "bg-emerald-500"][strength - 1] : "bg-zinc-300/60 dark:bg-white/10"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <AnimatePresence>
@@ -374,7 +422,8 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
                     </>
                   ) : (
                     <>
-                      {t(`auth.${mode}`)} <ArrowRight className="size-4.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.75} />
+                      {mode === "forgot" ? t("auth.sendCode") : mode === "reset" ? t("auth.resetSubmit") : t(`auth.${mode}`)}{" "}
+                      <ArrowRight className="size-4.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.75} />
                     </>
                   )}
                 </motion.button>
@@ -383,10 +432,18 @@ export default function AuthScreen({ theme, onToggleTheme, skin, setSkin }) {
               </form>
 
               <p className={clsx("mt-6 text-center", look.muted)}>
-                {isRegister ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
-                <button type="button" onClick={() => switchMode(isRegister ? "login" : "register")} className={clsx("cursor-pointer", look.link)}>
-                  {isRegister ? t("auth.login") : t("auth.register")}
-                </button>
+                {isRecovery ? (
+                  <button type="button" onClick={() => switchMode("login")} className={clsx("cursor-pointer", look.link)}>
+                    {t("auth.backToLogin")}
+                  </button>
+                ) : (
+                  <>
+                    {isRegister ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
+                    <button type="button" onClick={() => switchMode(isRegister ? "login" : "register")} className={clsx("cursor-pointer", look.link)}>
+                      {isRegister ? t("auth.login") : t("auth.register")}
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </motion.div>

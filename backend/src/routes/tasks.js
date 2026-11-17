@@ -1,6 +1,13 @@
 const { Router } = require("express");
+const { sendTaskCreatedEmail, sendTaskCompletedEmail } = require("../mailer");
 
 const TITLE_MAX = 200;
+
+async function getRecipient(pool, reqUser) {
+  if (reqUser?.email) return { name: reqUser.name, email: reqUser.email };
+  const { rows } = await pool.query("SELECT name, email FROM users WHERE id = $1", [reqUser.id]);
+  return rows[0] || null;
+}
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -44,6 +51,9 @@ function tasksRouter(pool) {
       "INSERT INTO tasks (title, user_id) VALUES ($1, $2) RETURNING *",
       [title, req.user.id]
     );
+    getRecipient(pool, req.user)
+      .then((u) => u && sendTaskCreatedEmail({ ...u, title: rows[0].title }))
+      .catch(() => {});
     res.status(201).json(rows[0]);
   });
 
@@ -78,6 +88,11 @@ function tasksRouter(pool) {
       [done, title, id, req.user.id]
     );
     if (rows.length === 0) throw new HttpError(404, "Tarea no encontrada");
+    if (done === true && rows[0].done === true) {
+      getRecipient(pool, req.user)
+        .then((u) => u && sendTaskCompletedEmail({ ...u, title: rows[0].title }))
+        .catch(() => {});
+    }
     res.json(rows[0]);
   });
 
