@@ -125,6 +125,9 @@ cd backend && npm test
 | `DATABASE_URL` | External Database URL | Internal Database URL |
 | `DB_SSL` | `true` | `false` |
 | `FRONTEND_URL` | `http://localhost:5173` | `https://skillware.online,https://www.skillware.online,https://taskboard-web-56l3.onrender.com` |
+| `JWT_SECRET` | opcional en desarrollo | obligatorio en Render (clave aleatoria de 64+ caracteres) |
+| `RESEND_API_KEY` | opcional en desarrollo | clave `re_...` de Resend para envío de correos |
+| `EMAIL_FROM` | `TaskBoard <notificaciones@skillware.online>` | remitente verificado en Resend |
 | `PORT` | `3000` | la asigna Render automáticamente |
 
 `FRONTEND_URL` acepta varios orígenes separados por coma. Las barras finales se ignoran.

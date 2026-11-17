@@ -7,6 +7,7 @@ process.env.FRONTEND_URL = "https://skillware.online, https://taskboard-web.onre
 
 const { createApp } = require("../src/app");
 const { migrate } = require("../src/db");
+const { getOutbox, clearOutbox } = require("../src/mailer");
 
 let app;
 let token;
@@ -15,6 +16,7 @@ let token;
 const as = (method, path) => request(app)[method](path).set("Authorization", `Bearer ${token}`);
 
 beforeEach(async () => {
+  clearOutbox();
   const { Pool } = newDb().adapters.createPg();
   const pool = new Pool();
   await migrate(pool);
@@ -165,4 +167,53 @@ test("Rate limiting: responde 429 al superar el límite de peticiones", async ()
     .set("Authorization", `Bearer ${reg.body.token}`)
     .expect(429);
   assert.match(res.body.error, /Demasiadas peticiones/);
+});
+
+test("Correos con Resend: bienvenida, creación y completado de tarea", async () => {
+  const { body: task } = await as("post", "/api/tasks").send({ title: "Configurar Resend" }).expect(201);
+  await as("patch", `/api/tasks/${task.id}`).send({ done: true }).expect(200);
+  await new Promise((r) => setImmediate(r));
+
+  const mails = getOutbox();
+  assert.equal(mails.length, 3);
+  assert.equal(mails[0].to, "ingrith@test.co");
+  assert.match(mails[0].subject, /bienvenida/i);
+  assert.match(mails[1].subject, /Configurar Resend/);
+  assert.match(mails[2].subject, /Completaste.*Configurar Resend/i);
+});
+
+test("Recuperación de contraseña: envía código de 6 dígitos y permite cambiar la clave", async () => {
+  await request(app).post("/api/auth/forgot-password").send({ email: "ingrith@test.co" }).expect(200);
+  const resetMail = getOutbox().find((m) => m.subject.includes("restablecer"));
+  assert.ok(resetMail);
+  const match = resetMail.text.match(/\b(\d{6})\b/);
+  assert.ok(match);
+  const code = match[1];
+
+  const wrongCode = code === "000000" ? "000001" : "000000";
+  await request(app)
+    .post("/api/auth/reset-password")
+    .send({ email: "ingrith@test.co", code: wrongCode, password: "nueva-clave-segura" })
+    .expect(400);
+
+  const reset = await request(app)
+    .post("/api/auth/reset-password")
+    .send({ email: "ingrith@test.co", code, password: "nueva-clave-segura" })
+    .expect(200);
+  assert.ok(reset.body.token);
+
+  await request(app)
+    .post("/api/auth/login")
+    .send({ email: "ingrith@test.co", password: "clave-segura-123" })
+    .expect(401);
+  await request(app)
+    .post("/api/auth/login")
+    .send({ email: "ingrith@test.co", password: "nueva-clave-segura" })
+    .expect(200);
+
+  // El código queda invalidado tras usarse
+  await request(app)
+    .post("/api/auth/reset-password")
+    .send({ email: "ingrith@test.co", code, password: "otra-clave-segura" })
+    .expect(400);
 });

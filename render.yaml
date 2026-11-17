@@ -37,6 +37,10 @@ services:
         generateValue: true # Render genera una clave aleatoria para firmar los tokens
       - key: FRONTEND_URL
         value: https://skillware.online,https://www.skillware.online,https://taskboard-web-56l3.onrender.com
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: TaskBoard <notificaciones@skillware.online>
 
   # Frontend: React + Vite como sitio estático
   - type: web
