@@ -141,3 +141,28 @@ test("Login bloquea después de 10 intentos", async () => {
   }
   await request(app).post("/api/auth/login").send({ email: "ingrith@test.co", password: "mala" }).expect(429);
 });
+
+test("Rate limiting: responde 429 al superar el límite de peticiones", async () => {
+  process.env.RATE_LIMIT_MAX = "3";
+  const { Pool } = newDb().adapters.createPg();
+  const pool = new Pool();
+  await migrate(pool);
+  const limitedApp = createApp(pool);
+  delete process.env.RATE_LIMIT_MAX;
+
+  const reg = await request(limitedApp)
+    .post("/api/auth/register")
+    .send({ name: "Rate", email: "rate@test.co", password: "clave-segura-123" });
+
+  for (let i = 0; i < 3; i++) {
+    await request(limitedApp)
+      .get("/api/tasks")
+      .set("Authorization", `Bearer ${reg.body.token}`)
+      .expect(200);
+  }
+  const res = await request(limitedApp)
+    .get("/api/tasks")
+    .set("Authorization", `Bearer ${reg.body.token}`)
+    .expect(429);
+  assert.match(res.body.error, /Demasiadas peticiones/);
+});
