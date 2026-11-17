@@ -17,25 +17,26 @@ const SKIN_APPS = { classic: ClassicApp, comic: ComicApp, brutal: BrutalApp };
 export default function App() {
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
+  // El estilo se elige aquí para que la pantalla de login y el tablero usen el mismo.
+  const { skin, setSkin } = useSkin(theme);
 
   return (
     <MotionConfig reducedMotion="user">
       {user ? (
         // key: al cambiar de usuario se reinician las tareas y el historial de notificaciones
         <NotificationsProvider key={user.id} userId={user.id}>
-          <Board user={user} theme={theme} onToggleTheme={toggle} />
+          <Board user={user} theme={theme} onToggleTheme={toggle} skin={skin} setSkin={setSkin} />
         </NotificationsProvider>
       ) : (
-        <AuthScreen theme={theme} onToggleTheme={toggle} />
+        <AuthScreen theme={theme} onToggleTheme={toggle} skin={skin} setSkin={setSkin} />
       )}
     </MotionConfig>
   );
 }
 
 /** Estado compartido (tareas, tema, idioma, filtro) y un estilo visual intercambiable encima. */
-function Board({ user, theme, onToggleTheme }) {
+function Board({ user, theme, onToggleTheme, skin, setSkin }) {
   const tasks = useTasks();
-  const { skin, setSkin } = useSkin(theme);
   const { notify } = useNotifications();
   const { t } = useI18n();
   const [filter, setFilter] = useState("all");
